@@ -344,6 +344,22 @@ try {
     await ctx.close();
   }
 
+  // 同じ回・同じ問題の途中を、保存に失敗したタブと合わせるとき、2段目に進んだこと・両方のまちがいを残す（kaji-mamoru#1 の CodeRabbit）
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
+    const g = await newPage(390, ctx);
+    const c = await g.evaluate(() => {
+      const base = __nm.load(), t = "netabako|mc1", P = __nm.G.make(t), ng = P.opts.filter((o) => o !== P.ans);
+      const run = (cur, tt) => ({ mode: "p", date: __nm.todayKey(), list: [t, "stove|mc2"], res: [], cur, id: "mc", t: tt });
+      const a = JSON.parse(JSON.stringify(base)); a.runs.p = run({ i: 0, tag: t, wrong: [ng[0]], hints: 0, step: 2, w2: ["kesu"], jd: null, h2: 0 }); a.t = 100;
+      const b = JSON.parse(JSON.stringify(base)); b.runs.p = run({ i: 0, tag: t, wrong: [ng[0], ng[1]], hints: 1, step: 1, w2: [], jd: null, h2: 0 }); b.t = 200;
+      localStorage.setItem("kjm-v1", JSON.stringify(b)); __nm.setMem(JSON.stringify(a));
+      try { return { cur: __nm.load().runs.p.cur, n: ng.slice(0, 2) }; } finally { __nm.setMem(null); }
+    });
+    check("同じ問題の途中を合わせると、2段目・両方のまちがい・ヒントを残す", c.cur && c.cur.step === 2 && c.cur.hints === 1 && c.n.every((w) => c.cur.wrong.includes(w)) && c.cur.w2.includes("kesu"), JSON.stringify(c.cur));
+    await ctx.close();
+  }
+
   // 古いタブ：同じ問題を2つのタブで開き、片方で答えたら、もう片方は二重に入れない
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });

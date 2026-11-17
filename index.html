@@ -416,6 +416,13 @@ const bookOf = (s, m) => (m === "d" ? s.days : m === "h" ? s.hdays : m === "a" ?
 // 終わった回を日ごとの記録に入れる（結果を見る前に閉じても、別のタブが次の日を保存しても、終えた日を失わない）
 function bank(s, r) { const b = doneOf(r) ? bookOf(s, r.mode) : null; if (!b || b[r.date] || (r.mode === "a" && s.days[r.date])) return false; b[r.date] = recOf(r); return true; }
 // 保存に失敗したあとはメモリと保存の両方を読む。合わせる前に両方を fresh() で補う。数は高いほう、途中経過は同じ回なら進んだほう
+// 同じ回・同じ問題の途中なら、片方を選ばずに合わせる（2段目に進んだこと・まちがい・ヒントを落とさない。keep() と同じ合わせ方。kaji-mamoru#1 の CodeRabbit）
+function mergeCur(w, x, y) {
+  const a = x.cur, b = y.cur;
+  if (!w || !a || !b || x.res.length !== y.res.length || a.i !== b.i || a.tag !== b.tag) return;
+  const u = (p, q) => [...new Set([...(p || []), ...(q || [])])];
+  w.cur = Object.assign({}, w.cur, { wrong: u(a.wrong, b.wrong), w2: u(a.w2, b.w2), hints: Math.max(a.hints || 0, b.hints || 0), step: Math.max(a.step || 1, b.step || 1), jd: a.jd || b.jd || null, h2: a.h2 || b.h2 ? 1 : 0 });
+}
 function load() {
   let a = null, b = null;
   try { b = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -439,7 +446,7 @@ function load() {
     if (x === undefined || y === undefined) { if (x || y) s.runs[m] = x || y; continue; }
     if (!x || !y) { const r = x || y; if (!r || (s.gone && s.gone[r.id]) || bank(s, r) || doneOf(r)) { s.runs[m] = null; continue; } const bd = bookOf(s, r.mode); if (!bd || !bd[r.date]) s.runs[m] = r; continue; }
     if (x.id !== y.id && x.date !== y.date) { const [w, l] = x.date > y.date ? [x, y] : [y, x]; bank(s, l); s.runs[m] = w; }
-    else if (x.id === y.id) { const px = prog(x), py = prog(y); s.runs[m] = px > py ? x : py > px ? y : n.runs[m]; }
+    else if (x.id === y.id) { const px = prog(x), py = prog(y); s.runs[m] = px > py ? x : py > px ? y : n.runs[m]; mergeCur(s.runs[m], x, y); }
   }
   return tidy(s);
 }
