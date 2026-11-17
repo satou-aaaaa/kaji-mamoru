@@ -352,10 +352,18 @@ try {
       const base = __nm.load(), t = "netabako|mc1", P = __nm.G.make(t), ng = P.opts.filter((o) => o !== P.ans);
       const run = (cur, tt) => ({ mode: "p", date: __nm.todayKey(), list: [t, "stove|mc2"], res: [], cur, id: "mc", t: tt });
       const a = JSON.parse(JSON.stringify(base)); a.runs.p = run({ i: 0, tag: t, wrong: [ng[0]], hints: 0, step: 2, w2: ["kesu"], jd: null, h2: 0 }); a.t = 100;
-      const b = JSON.parse(JSON.stringify(base)); b.runs.p = run({ i: 0, tag: t, wrong: [ng[0], ng[1]], hints: 1, step: 1, w2: [], jd: null, h2: 0 }); b.t = 200;
+      const b = JSON.parse(JSON.stringify(base)); b.runs.p = run({ i: 0, tag: t, wrong: [ng[1]], hints: 1, step: 1, w2: [], jd: null, h2: 0 }); b.t = 200;
       localStorage.setItem("kjm-v1", JSON.stringify(b)); __nm.setMem(JSON.stringify(a));
       try { return { cur: __nm.load().runs.p.cur, n: ng.slice(0, 2) }; } finally { __nm.setMem(null); }
     });
+    const bad = await g.evaluate(() => {
+      const base = __nm.load(), t = "netabako|mc3", run = (cur, tt) => ({ mode: "p", date: __nm.todayKey(), list: [t], res: [], cur, id: "mc3", t: tt });
+      const a = JSON.parse(JSON.stringify(base)); a.runs.p = run({ i: 0, tag: t, wrong: 1, hints: 0, step: 1, w2: 1, jd: null, h2: 0 }); a.t = 100;
+      const b = JSON.parse(JSON.stringify(base)); b.runs.p = run({ i: 0, tag: t, wrong: [], hints: 0, step: 1, w2: "x", jd: null, h2: 0 }); b.t = 200;
+      localStorage.setItem("kjm-v1", JSON.stringify(b)); __nm.setMem(JSON.stringify(a));
+      try { __nm.load(); return ""; } catch (e) { return String(e); } finally { __nm.setMem(null); }
+    });
+    check("途中の記録のまちがいが配列でなくても、合わせるときに止まらない（kaji-mamoru#1 の CodeRabbit）", bad === "", bad);
     check("同じ問題の途中を合わせると、2段目・両方のまちがい・ヒントを残す", c.cur && c.cur.step === 2 && c.cur.hints === 1 && c.n.every((w) => c.cur.wrong.includes(w)) && c.cur.w2.includes("kesu"), JSON.stringify(c.cur));
     await ctx.close();
   }
@@ -525,7 +533,7 @@ try {
   check("2段目「なんのため？」の分け方：どの種類の問題も5つ（出さない・気づく・広げない・消す・備える）のどれかで、5つとも使う", bad.length === 0 && Object.keys(G.GROUPS).join() === "dasanai,kizuku,hirogenai,kesu,sonaeru" && used.size === 5, bad.join(",")); }
 // 引き継ぎコード（shared-workflows template/qa/transfer-check.mjs）
 try {
-  const sample = { "kjm-v1": JSON.stringify({ v: 1, tut: true, days: { "2026-11-13": { m: [0, 1, 0, 0, 2], k: ["netabako", "stove", "tenken", "curtain", "naranai"] } }, hdays: {}, adays: {}, dex: { netabako: 1, konro: 1, hokori: 1, anzenkonro: 1, anzensen: 1 }, runs: {}, kofi: {}, ach: {}, ebest: 7, t: 1 }), "kjm-fs": "3" };
+  const sample = { "kjm-v1": JSON.stringify({ v: 1, tut: true, days: { "2026-11-13": { m: [0, 1, 0, 0, 2], k: ["netabako", "stove", "tenken", "curtain", "naranai"] } }, hdays: {}, adays: {}, dex: { netabako: 1, konro: 1, hokori: 1, anzenkonro: 1, anzensen: 1 }, runs: {}, kofi: {}, ach: {}, ebest: 7, t: 1 }), "kjm-fs": "3", "kjm-depth": JSON.stringify({ v: 1, sure: 3, sureOk: 2, learned: 1, rv: { "netabako|x1": { s: 1, due: "2026-11-20", t: 5, lab: "寝たばこ" } } }) };
   await checkTransfer({ browser, url, game: "kaji-mamoru", sample, check, open: async (pg) => { if (await pg.locator("#howto[open]").count()) await pg.click("#howto-ok"); } });
 } catch (e) { check("引き継ぎの検査が最後まで動く", false, e.message.split("\n")[0]); }
 await browser.close();

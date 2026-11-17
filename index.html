@@ -420,7 +420,7 @@ function bank(s, r) { const b = doneOf(r) ? bookOf(s, r.mode) : null; if (!b || 
 function mergeCur(w, x, y) {
   const a = x.cur, b = y.cur;
   if (!w || !a || !b || x.res.length !== y.res.length || a.i !== b.i || a.tag !== b.tag) return;
-  const u = (p, q) => [...new Set([...(p || []), ...(q || [])])];
+  const arr = (v) => (Array.isArray(v) ? v : []), u = (p, q) => [...new Set([...arr(p), ...arr(q)])];
   w.cur = Object.assign({}, w.cur, { wrong: u(a.wrong, b.wrong), w2: u(a.w2, b.w2), hints: Math.max(a.hints || 0, b.hints || 0), step: Math.max(a.step || 1, b.step || 1), jd: a.jd || b.jd || null, h2: a.h2 || b.h2 ? 1 : 0 });
 }
 function load() {
