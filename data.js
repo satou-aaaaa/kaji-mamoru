@@ -39,9 +39,15 @@
     sonaeru: { name: "逃げる・地域で備える", sub: "避難の確保・地域ぐるみの防火" },
   };
 
+  // part:ri:begin（shared-workflows の template/parts/data/ri.js の写し。ここでは直さない。node scripts/sync-template.mjs で写す）
   const ri = (R, a, b) => a + Math.floor(R() * (b - a + 1));
+  // part:ri:end
+  // part:shuffle:begin（shared-workflows の template/parts/data/shuffle.js の写し。ここでは直さない。node scripts/sync-template.mjs で写す）
   function shuffle(R, a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = ri(R, 0, i); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+  // part:shuffle:end
+  // part:pickN:begin（shared-workflows の template/parts/data/pickN.js の写し。ここでは直さない。node scripts/sync-template.mjs で写す）
   function pickN(R, a, n) { return shuffle(R, a).slice(0, n); }
+  // part:pickN:end
   const MEDIA = ["家の中の一場面", "家族の会話", "町内の回覧板", "防火のちらし"];
 
   // どのポイントが合うかを当てる問題。ans：答え（ACTS の番号）、sit：場面の言い方、near：まぎらわしいので選び肢に入れないポイント
@@ -193,8 +199,12 @@
   const BY = Object.fromEntries(KINDS.map((k) => [k.id, k]));
   const kindsOf = (lv) => KINDS.filter((k) => k.lv === lv).map((k) => k.id);
 
+  // part:seedOf:begin（shared-workflows の template/parts/data/seedOf.js の写し。ここでは直さない。node scripts/sync-template.mjs で写す）
   function seedOf(str) { let h = 2166136261; for (const ch of String(str)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  // part:seedOf:end
+  // part:rng:begin（shared-workflows の template/parts/data/rng.js の写し。ここでは直さない。node scripts/sync-template.mjs で写す）
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  // part:rng:end
 
   // 1問を作る。tag は「種類|種」（例 "netabako|2026-11-17:d0"）。同じ tag ならいつも同じ問題
   function make(tag) {
